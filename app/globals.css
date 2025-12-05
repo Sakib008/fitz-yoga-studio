@@ -1,26 +1,82 @@
 @import "tailwindcss";
+@config "../tailwind.config.ts";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --color-linen: #F2F0E9;
+    --color-ink: #1A1A1A;
+    --color-clay: #BC4B00;
+    --color-grid: #D1D5DB;
+  }
+
+  body {
+    @apply bg-linen text-ink font-body antialiased selection:bg-clay selection:text-white;
+    cursor: none;
+    /* Hide default cursor for custom follower */
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading font-bold uppercase tracking-tighter;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+
+  /* Visible Grid Utilities */
+  .border-grid {
+    @apply border-gray-300;
+  }
+
+  .divide-grid {
+    @apply divide-gray-300;
+  }
+
+  /* Custom Cursor */
+  .cursor-follower {
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    background-color: #BC4B00;
+    border-radius: 50%;
+    z-index: 9999;
+    mix-blend-mode: difference;
+    transition: width 0.2s, height 0.2s, background-color 0.2s;
+  }
+
+  .cursor-follower.hovered {
+    width: 80px;
+    height: 80px;
+    background-color: transparent;
+    border: 2px solid #BC4B00;
+    mix-blend-mode: normal;
+  }
+
+  /* Marquee Animation */
+  .marquee-container {
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .marquee-content {
+    display: inline-block;
+    animation: marquee 20s linear infinite;
+  }
+
+  @keyframes marquee {
+    0% {
+      transform: translateX(0);
+    }
+
+    100% {
+      transform: translateX(-50%);
+    }
+  }
 }
