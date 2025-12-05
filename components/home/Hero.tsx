@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
+import Link from 'next/link';
 
 export default function Hero() {
     return (
@@ -51,12 +52,16 @@ export default function Hero() {
                     </p>
 
                     <div className="flex gap-4">
-                        <Button variant="primary" size="large">
-                            Start Trial
-                        </Button>
-                        <Button variant="outline" size="large">
-                            View Schedule
-                        </Button>
+                        <Link href="/booking">
+                            <Button variant="primary" size="large">
+                                Start Trial
+                            </Button>
+                        </Link>
+                        <Link href="/schedule">
+                            <Button variant="outline" size="large">
+                                View Schedule
+                            </Button>
+                        </Link>
                     </div>
                 </motion.div>
             </div>

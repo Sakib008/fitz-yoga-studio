@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/Button';
+import Link from 'next/link';
 
 const plans = [
     {
@@ -78,12 +79,14 @@ export default function PricingPage() {
                                 ))}
                             </ul>
 
-                            <Button
-                                variant={plan.highlight ? 'primary' : 'outline'}
-                                className={`w-full ${plan.highlight ? 'bg-clay border-clay hover:bg-white hover:text-ink' : ''}`}
-                            >
-                                {plan.cta}
-                            </Button>
+                            <Link href="/booking" className="w-full">
+                                <Button
+                                    variant={plan.highlight ? 'primary' : 'outline'}
+                                    className={`w-full ${plan.highlight ? 'bg-clay border-clay hover:bg-white hover:text-ink' : ''}`}
+                                >
+                                    {plan.cta}
+                                </Button>
+                            </Link>
                         </div>
                     ))}
                 </div>

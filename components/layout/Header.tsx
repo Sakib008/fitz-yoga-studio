@@ -53,9 +53,11 @@ export default function Header() {
 
                 {/* CTA Button */}
                 <div className="hidden md:flex items-stretch w-48">
-                    <button className="w-full h-full bg-clay text-white font-body uppercase tracking-wider hover:bg-ink transition-colors">
-                        Book Now
-                    </button>
+                    <Link href="/booking" className="w-full h-full">
+                        <button className="w-full h-full bg-clay text-white font-body uppercase tracking-wider hover:bg-ink transition-colors">
+                            Book Now
+                        </button>
+                    </Link>
                 </div>
 
                 {/* Mobile Menu Button */}

@@ -1,20 +1,36 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { supabase } from '@/lib/supabase';
+import { useRouter } from 'next/navigation';
 
-const scheduleData = [
-    { time: '07:00 AM', mon: 'Hatha Flow', tue: 'Vinyasa', wed: 'Ashtanga', thu: 'Power Yoga', fri: 'Hatha Flow', sat: 'Sunrise Yoga', sun: 'Restorative' },
-    { time: '09:00 AM', mon: 'Vinyasa', tue: 'Hatha Flow', wed: 'Power Yoga', thu: 'Ashtanga', fri: 'Vinyasa', sat: 'Community Class', sun: 'Meditation' },
-    { time: '12:00 PM', mon: 'Power Yoga', tue: 'Ashtanga', wed: 'Vinyasa', thu: 'Hatha Flow', fri: 'Power Yoga', sat: 'Workshop', sun: '-' },
-    { time: '04:00 PM', mon: 'Ashtanga', tue: 'Power Yoga', wed: 'Hatha Flow', thu: 'Vinyasa', fri: 'Ashtanga', sat: '-', sun: '-' },
-    { time: '06:00 PM', mon: 'Yin Yoga', tue: 'Restorative', wed: 'Yin Yoga', thu: 'Restorative', fri: 'Yin Yoga', sat: '-', sun: '-' },
-    { time: '08:00 PM', mon: 'Meditation', tue: 'Nidra', wed: 'Meditation', thu: 'Nidra', fri: 'Sound Bath', sat: '-', sun: '-' },
-];
-
-const days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 export default function SchedulePage() {
+    const [schedule, setSchedule] = useState<any[]>([]);
+    const router = useRouter();
+
+    useEffect(() => {
+        const fetchSchedule = async () => {
+            const { data, error } = await supabase
+                .from('schedule')
+                .select('*, classes(*), instructors(*)')
+                .order('start_time', { ascending: true });
+
+            if (data) setSchedule(data);
+        };
+        fetchSchedule();
+    }, []);
+
+    // Helper to get classes for a specific day and time slot
+    // This is a simplified view logic. Real-world would be more complex time grouping.
+    // For this demo, we'll just list them by day.
+
+    const handleBook = (scheduleId: string) => {
+        router.push(`/booking?scheduleId=${scheduleId}`);
+    };
+
     return (
         <div className="bg-linen min-h-screen pt-20 md:pt-24 pb-20">
             <div className="container-custom">
@@ -23,75 +39,74 @@ export default function SchedulePage() {
                         Schedule
                     </h1>
                     <p className="font-body text-sm text-ink/60 uppercase tracking-wider max-w-xl">
-                        Weekly Class Timetable. All levels welcome. Mats provided.
-                        <br />
-                        Please arrive 10 minutes early.
+                        Weekly Class Timetable. Click any slot to book.
                     </p>
                 </div>
 
                 {/* Mobile View (List) */}
                 <div className="md:hidden space-y-8">
-                    {days.map((day, dayIndex) => (
-                        <div key={day} className="border border-grid">
-                            <div className="bg-ink text-white p-4 font-heading font-bold text-xl">
-                                {day}
-                            </div>
-                            <div className="divide-y divide-grid">
-                                {scheduleData.map((slot, index) => {
-                                    const classKey = day.toLowerCase() as keyof typeof slot;
-                                    const className = slot[classKey];
-                                    if (className === '-' || !className) return null;
+                    {days.map((day) => {
+                        const dayClasses = schedule.filter(s => s.day_of_week === day);
+                        if (dayClasses.length === 0) return null;
 
-                                    return (
-                                        <div key={index} className="p-4 flex justify-between items-center">
-                                            <span className="font-body text-sm font-bold text-ink">{slot.time}</span>
-                                            <span className="font-heading font-bold text-ink uppercase">{className}</span>
+                        return (
+                            <div key={day} className="border border-grid">
+                                <div className="bg-ink text-white p-4 font-heading font-bold text-xl">
+                                    {day}
+                                </div>
+                                <div className="divide-y divide-grid">
+                                    {dayClasses.map((slot) => (
+                                        <div
+                                            key={slot.id}
+                                            onClick={() => handleBook(slot.id)}
+                                            className="p-4 flex justify-between items-center cursor-pointer hover:bg-clay hover:text-white transition-colors"
+                                        >
+                                            <span className="font-body text-sm font-bold">{slot.start_time.slice(0, 5)}</span>
+                                            <div className="text-right">
+                                                <span className="font-heading font-bold uppercase block">{slot.classes.name}</span>
+                                                <span className="font-body text-xs opacity-70">{slot.instructors.name}</span>
+                                            </div>
                                         </div>
-                                    );
-                                })}
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
 
                 {/* Desktop View (Grid) */}
                 <div className="hidden md:block overflow-x-auto">
-                    <table className="w-full border-collapse border border-grid text-left">
-                        <thead>
-                            <tr>
-                                <th className="p-4 border-r border-b border-grid font-body text-xs font-bold text-ink/40 uppercase tracking-widest w-24">
-                                    Time
-                                </th>
-                                {days.map(day => (
-                                    <th key={day} className="p-4 border-r border-b border-grid font-body text-xs font-bold text-ink/40 uppercase tracking-widest">
-                                        {day}
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {scheduleData.map((row, index) => (
-                                <tr key={index} className="group hover:bg-ink hover:text-white transition-colors duration-200">
-                                    <td className="p-4 border-r border-b border-grid font-body text-xs font-bold whitespace-nowrap group-hover:text-white/60">
-                                        {row.time}
-                                    </td>
-                                    {days.map(day => {
-                                        const classKey = day.toLowerCase() as keyof typeof row;
-                                        const className = row[classKey];
-                                        return (
-                                            <td key={day} className="p-4 border-r border-b border-grid font-heading font-bold uppercase text-sm md:text-base cursor-pointer hover:bg-clay hover:text-white transition-colors duration-200">
-                                                {className !== '-' ? className : ''}
-                                            </td>
-                                        );
-                                    })}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    <div className="grid grid-cols-7 border border-grid">
+                        {days.map(day => (
+                            <div key={day} className="border-r border-grid last:border-r-0">
+                                <div className="p-4 border-b border-grid font-body text-xs font-bold text-ink/40 uppercase tracking-widest text-center bg-linen sticky top-0">
+                                    {day}
+                                </div>
+                                <div className="divide-y divide-grid">
+                                    {schedule
+                                        .filter(s => s.day_of_week === day)
+                                        .map(slot => (
+                                            <div
+                                                key={slot.id}
+                                                onClick={() => handleBook(slot.id)}
+                                                className="p-4 cursor-pointer hover:bg-ink hover:text-white transition-all duration-200 group h-32 flex flex-col justify-between"
+                                            >
+                                                <span className="font-body text-xs font-bold opacity-50 group-hover:opacity-100">{slot.start_time.slice(0, 5)}</span>
+                                                <div>
+                                                    <span className="font-heading font-bold uppercase text-sm block leading-tight mb-1">{slot.classes.name}</span>
+                                                    <span className="font-body text-xs opacity-60 group-hover:opacity-80">{slot.instructors.name}</span>
+                                                </div>
+                                            </div>
+                                        ))
+                                    }
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
                 <div className="mt-12 flex justify-center">
-                    <Button variant="primary" size="large">
+                    <Button variant="primary" size="large" onClick={() => router.push('/booking')}>
                         Book A Class
                     </Button>
                 </div>

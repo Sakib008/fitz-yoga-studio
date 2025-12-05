@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/Button';
+import Link from 'next/link';
 
 export default function BentoGrid() {
     return (
@@ -38,9 +39,11 @@ export default function BentoGrid() {
                             </li>
                         </ul>
                     </div>
-                    <Button variant="primary" className="w-full">
-                        Join Now
-                    </Button>
+                    <Link href="/pricing" className="w-full">
+                        <Button variant="primary" className="w-full">
+                            Join Now
+                        </Button>
+                    </Link>
                 </div>
 
                 {/* Box 2: Location */}
@@ -63,9 +66,11 @@ export default function BentoGrid() {
                             <p>Sat-Sun: 6:00 AM - 8:00 PM</p>
                         </address>
                     </div>
-                    <Button variant="outline" className="w-full mt-8">
-                        Get Directions
-                    </Button>
+                    <Link href="/contact" className="w-full mt-8">
+                        <Button variant="outline" className="w-full">
+                            Get Directions
+                        </Button>
+                    </Link>
                 </div>
 
                 {/* Box 3: Drop-In / Book */}
@@ -84,9 +89,11 @@ export default function BentoGrid() {
                         </p>
                     </div>
                     <div className="space-y-4">
-                        <Button variant="outline" className="w-full">
-                            Book A Class
-                        </Button>
+                        <Link href="/booking" className="w-full">
+                            <Button variant="outline" className="w-full">
+                                Book A Class
+                            </Button>
+                        </Link>
                         <p className="text-center font-body text-xs text-ink/40 uppercase">
                             First time? Try for $15
                         </p>

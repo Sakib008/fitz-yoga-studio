@@ -29,9 +29,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${spaceGrotesk.variable} ${dmMono.variable} antialiased bg-linen text-ink`}
+        className={`${spaceGrotesk.variable} ${dmMono.variable} font-body bg-linen text-ink antialiased`}
+        suppressHydrationWarning
       >
         <CursorFollower />
         <Header />
