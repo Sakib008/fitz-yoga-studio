@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import Link from 'next/link';
 
 export default function ScheduleTicker() {
     const [items, setItems] = useState<string[]>(["LOADING SCHEDULE..."]);
@@ -35,9 +36,9 @@ export default function ScheduleTicker() {
                 <div className="marquee-content flex items-center space-x-8 md:space-x-12 px-4">
                     {/* Triple duplication for smooth loop */}
                     {[...items, ...items, ...items].map((item, index) => (
-                        <span key={index} className="text-sm md:text-base font-body font-bold tracking-widest text-ink whitespace-nowrap">
+                        <Link key={index} href="/schedule" className="text-sm md:text-base font-body font-bold tracking-widest text-ink whitespace-nowrap hover:text-clay transition-colors">
                             {item}
-                        </span>
+                        </Link>
                     ))}
                 </div>
             </div>

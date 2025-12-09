@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/Button';
+import Link from 'next/link';
 
 const classes = [
     {
@@ -105,9 +106,11 @@ export default function ClassesPage() {
 
                             {/* Action */}
                             <div className="md:col-span-2 flex items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <Button variant="outline" size="small">
-                                    Book Class
-                                </Button>
+                                <Link href="/booking">
+                                    <Button variant="outline" size="small">
+                                        Book Class
+                                    </Button>
+                                </Link>
                             </div>
                         </div>
                     ))}

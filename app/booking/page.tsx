@@ -18,6 +18,7 @@ function BookingContent() {
     const [formData, setFormData] = useState({ name: '', email: '' });
     const [loading, setLoading] = useState(false);
     const [bookingStatus, setBookingStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [error, setError] = useState<string | null>(null);
 
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -30,8 +31,14 @@ function BookingContent() {
     // Fetch Classes on Mount
     useEffect(() => {
         const fetchClasses = async () => {
-            const { data, error } = await supabase.from('classes').select('*');
-            if (data) setClasses(data);
+            try {
+                const { data, error } = await supabase.from('classes').select('*');
+                if (error) throw error;
+                if (data) setClasses(data);
+            } catch (err: any) {
+                console.error("Error fetching classes:", err);
+                setError("Failed to load classes. Please try again later.");
+            }
         };
         fetchClasses();
     }, []);
@@ -40,16 +47,22 @@ function BookingContent() {
     useEffect(() => {
         if (preSelectedScheduleId) {
             const fetchPreSelected = async () => {
-                const { data: slot, error } = await supabase
-                    .from('schedule')
-                    .select('*, classes(*), instructors(*)')
-                    .eq('id', preSelectedScheduleId)
-                    .single();
+                try {
+                    const { data: slot, error } = await supabase
+                        .from('schedule')
+                        .select('*, classes(*), instructors(*)')
+                        .eq('id', preSelectedScheduleId)
+                        .single();
 
-                if (slot) {
-                    setSelectedClass(slot.classes);
-                    setSelectedSlot(slot);
-                    setCurrentStep(2); // Jump to Details
+                    if (error) throw error;
+
+                    if (slot) {
+                        setSelectedClass(slot.classes);
+                        setSelectedSlot(slot);
+                        setCurrentStep(2); // Jump to Details
+                    }
+                } catch (err) {
+                    console.error("Error fetching pre-selected slot:", err);
                 }
             };
             fetchPreSelected();
@@ -60,11 +73,17 @@ function BookingContent() {
     useEffect(() => {
         if (selectedClass) {
             const fetchSchedule = async () => {
-                const { data, error } = await supabase
-                    .from('schedule')
-                    .select('*, instructors(*)')
-                    .eq('class_id', selectedClass.id);
-                if (data) setSchedules(data);
+                try {
+                    const { data, error } = await supabase
+                        .from('schedule')
+                        .select('*, instructors(*)')
+                        .eq('class_id', selectedClass.id);
+
+                    if (error) throw error;
+                    if (data) setSchedules(data);
+                } catch (err) {
+                    console.error("Error fetching schedule:", err);
+                }
             };
             fetchSchedule();
         }
@@ -72,22 +91,38 @@ function BookingContent() {
 
     const handleBook = async () => {
         setLoading(true);
-        const { error } = await supabase.from('bookings').insert({
-            schedule_id: selectedSlot.id,
-            user_name: formData.name,
-            user_email: formData.email,
-        });
+        try {
+            const { error } = await supabase.from('bookings').insert({
+                schedule_id: selectedSlot.id,
+                user_name: formData.name,
+                user_email: formData.email,
+            });
 
-        if (error) {
-            setBookingStatus('error');
-        } else {
+            if (error) throw error;
+
             setBookingStatus('success');
             setCurrentStep(3);
+        } catch (err) {
+            console.error("Error booking class:", err);
+            setBookingStatus('error');
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     if (!isMounted) return null;
+
+    if (error) {
+        return (
+            <div className="bg-linen min-h-screen pt-24 pb-20 flex justify-center items-center">
+                <div className="text-center">
+                    <h2 className="text-2xl font-heading font-bold text-ink mb-4">Oops!</h2>
+                    <p className="text-ink/60 mb-6">{error}</p>
+                    <Button variant="primary" onClick={() => window.location.reload()}>Retry</Button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-linen min-h-screen pt-20 md:pt-24 pb-20">
@@ -113,21 +148,25 @@ function BookingContent() {
                         <>
                             <h1 className="text-4xl md:text-5xl font-heading font-bold text-ink uppercase mb-8">Select Class</h1>
                             <div className="space-y-4 mb-12 flex-1">
-                                {classes.map((cls) => (
-                                    <div
-                                        key={cls.id}
-                                        onClick={() => setSelectedClass(cls)}
-                                        className={`border p-6 flex justify-between items-center cursor-pointer transition-colors group ${selectedClass?.id === cls.id ? 'border-clay bg-linen' : 'border-grid hover:border-clay'}`}
-                                    >
-                                        <div>
-                                            <h3 className="font-heading font-bold text-xl text-ink uppercase group-hover:text-clay transition-colors">{cls.name}</h3>
-                                            <p className="font-body text-xs text-ink/60 uppercase mt-1">{cls.duration} Min • {cls.intensity}</p>
+                                {classes.length === 0 ? (
+                                    <p className="text-ink/60">Loading classes...</p>
+                                ) : (
+                                    classes.map((cls) => (
+                                        <div
+                                            key={cls.id}
+                                            onClick={() => setSelectedClass(cls)}
+                                            className={`border p-6 flex justify-between items-center cursor-pointer transition-colors group ${selectedClass?.id === cls.id ? 'border-clay bg-linen' : 'border-grid hover:border-clay'}`}
+                                        >
+                                            <div>
+                                                <h3 className="font-heading font-bold text-xl text-ink uppercase group-hover:text-clay transition-colors">{cls.name}</h3>
+                                                <p className="font-body text-xs text-ink/60 uppercase mt-1">{cls.duration} Min • {cls.intensity}</p>
+                                            </div>
+                                            <div className={`w-6 h-6 border rounded-full flex items-center justify-center ${selectedClass?.id === cls.id ? 'border-clay' : 'border-grid group-hover:border-clay'}`}>
+                                                <div className={`w-3 h-3 bg-clay rounded-full transition-opacity ${selectedClass?.id === cls.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} />
+                                            </div>
                                         </div>
-                                        <div className={`w-6 h-6 border rounded-full flex items-center justify-center ${selectedClass?.id === cls.id ? 'border-clay' : 'border-grid group-hover:border-clay'}`}>
-                                            <div className={`w-3 h-3 bg-clay rounded-full transition-opacity ${selectedClass?.id === cls.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} />
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))
+                                )}
                             </div>
                             <div className="flex justify-end">
                                 <Button variant="primary" disabled={!selectedClass} onClick={() => setCurrentStep(1)}>Next Step</Button>
